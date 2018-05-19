@@ -11,10 +11,12 @@ namespace EKF {
 class NavigationState {
 public:
   NavigationState();
-  NavigationState(const Eigen::Vector3d p_0, const Eigen::Vector3d v_0,
-                  const Eigen::Matrix3d T_0);
-  void updateStateWithMeasurements(Eigen::Vector3d f_bi_b, Eigen::Vector3d omega_bi_b);
-  void integrateState();
+  void setState(const Eigen::Vector3d p, const Eigen::Vector3d v,
+                const Eigen::Matrix3d T);
+  std::tuple<Eigen::Vector3d, Eigen::Vector3d, Eigen::Matrix3d> getState();
+  void updateStateWithMeasurements(Eigen::Vector3d f_bi_b,
+                                   Eigen::Vector3d omega_bi_b);
+  void integrateState(double dt);
 
 private:
   Eigen::Matrix3d D();
@@ -25,20 +27,10 @@ private:
   Eigen::Vector3d v_dot_n_, v_n_;
   Eigen::Matrix3d T_dot_bn_, T_bn_;
 
-  const Eigen::Vector3d g_n_ = {0,0,9.81}; //TODO: can be more precise
-  const double omega_ei_ = 7.292E-05; // Earth turn rate [rad/s]
+  const Eigen::Vector3d g_n_ = {0, 0, Utils::g}; // TODO: can be more precise
 
-  enum Pose {
-    phi,
-    lambda,
-    h
-  };
-
-  enum Vel {
-    n,
-    e,
-    d
-  };
+  enum Pose { phi, lambda, h };
+  enum Vel { n, e, d };
 };
 } // namespace EKF
 

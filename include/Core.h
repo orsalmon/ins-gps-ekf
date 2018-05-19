@@ -8,5 +8,7 @@
 #include <Eigen/Eigen>
 #include <math.h>
 #include <Utils.h>
+#include <memory>
+#include <tuple>
 
 #endif //EKF_CORE_H
