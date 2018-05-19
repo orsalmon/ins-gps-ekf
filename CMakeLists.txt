@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.10)
-project(EKF)
+project(EKF-INS)
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -17,11 +17,11 @@ endif()
 
 include_directories(include ${EIGEN3_INCLUDE_DIRS})
 
-file(GLOB EKF_HEADER
+file(GLOB EKF_INCLUDE
         "include/*.h")
 
 file(GLOB EKF_SRC
         "src/*.cpp")
 
-add_library(ekf SHARED ${EKF_SRC})
-target_include_directories(ekf PRIVATE ${EKF_HEADER})
+add_library(EKF-INS SHARED ${EKF_SRC})
+target_include_directories(EKF-INS PRIVATE ${EKF_INCLUDE})
