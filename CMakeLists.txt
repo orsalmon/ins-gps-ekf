@@ -3,6 +3,8 @@ project(EKF-INS)
 
 set(CMAKE_CXX_STANDARD 17)
 
+find_package(Boost REQUIRED)
+
 # Attempt to find Eigen using its own CMake module.
 # If that fails, fall back to cmake_modules package.
 find_package(Eigen3)
@@ -24,4 +26,4 @@ file(GLOB EKF_SRC
         "src/*.cpp")
 
 add_library(EKF-INS SHARED ${EKF_SRC})
-target_include_directories(EKF-INS PRIVATE ${EKF_INCLUDE})
+target_include_directories(EKF-INS PRIVATE ${Boost_LIBRARIES})
