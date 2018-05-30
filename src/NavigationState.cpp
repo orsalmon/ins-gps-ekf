@@ -35,15 +35,7 @@ void NavigationState::updateStateWithMeasurements(Eigen::Vector3d f_bi_b,
 void NavigationState::integrateState(double dt) {
   p_n_ += dt * p_dot_n_;
   v_n_ += dt * v_dot_n_;
-
-  Eigen::Vector3d sigma = Utils::toEulerAngles(T_dot_bn_);
-  double sigma_m = sigma.squaredNorm();
-  Eigen::Matrix3d Sigma;
-  Utils::toSkewSymmetricMatrix(Sigma, sigma);
-  T_bn_ = T_bn_ *
-          (Eigen::Matrix3d::Identity() +
-           (std::sin(sigma_m) / sigma_m) * Sigma * dt +
-           ((1 - std::cos(sigma_m)) / std::pow(sigma_m, 2)) * Sigma * Sigma);
+  T_bn_ += dt * T_dot_bn_; //TODO: can be more precise with sin/cos method
 }
 
 Eigen::Matrix3d NavigationState::D() {
