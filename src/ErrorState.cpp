@@ -32,6 +32,14 @@ void ErrorState::updateStateWithMeasurements(Eigen::Vector3d f_bi_b,
   b_dot_g_ = Fg() * b_g_ + omega_g_gm();
 }
 
+void ErrorState::integrateState(double dt) {
+  delta_p_n_ += dt * delta_p_dot_n_;
+  delta_v_n_ += dt * delta_v_dot_n_;
+  epsilon_n_ += dt * epsilon_dot_n_;
+  b_a_ += dt * b_dot_a_;
+  b_g_ += dt * b_dot_g_;
+}
+
 Eigen::Matrix3d ErrorState::Frr() {
   Eigen::Matrix3d Frr_ = Eigen::Matrix3d::Zero();
   Frr_(0, 2) = -v_n_(n) / std::pow(Utils::Rm(p_n_(phi)) + p_n_(h), 2);
