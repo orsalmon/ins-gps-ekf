@@ -6,6 +6,7 @@
 #define EKF_CORE_H
 
 #include <Eigen/Eigen>
+#include <unsupported/Eigen/MatrixFunctions>
 #include <math.h>
 #include <Utils.h>
 #include <memory>
