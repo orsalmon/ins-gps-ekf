@@ -7,16 +7,14 @@
 namespace EKF_INS {
 ErrorState::ErrorState(
     std::shared_ptr<EKF_INS::NavigationState> navigation_state_ptr)
-    : navigation_state_ptr_(navigation_state_ptr), gen_(rd_()),
-      dis_(-1.0, 1.0) {
+    : navigation_state_ptr_(navigation_state_ptr), gen_(rd_()), dis_(-1.0, 1.0),
+      delta_x_(15), F_(15, 15) {
   resetErrorState();
 }
 
-void ErrorState::getNavigationState() {
-  auto fullState = navigation_state_ptr_->getState();
-  p_n_ = std::get<0>(fullState);
-  v_n_ = std::get<1>(fullState);
-  T_bn_ = std::get<2>(fullState);
+Eigen::VectorXd ErrorState::getState() {
+  delta_x_ << delta_p_n_, delta_v_n_, epsilon_n_, b_a_, b_g_;
+  return delta_x_;
 }
 
 void ErrorState::updateStateWithMeasurements(Eigen::Vector3d f_bi_b,
@@ -185,5 +183,28 @@ Eigen::Vector3d ErrorState::omega_g_gm() {
   Eigen::Vector3d omega_g_gm_(dis_(gen_), dis_(gen_), dis_(gen_));
 
   return omega_g_gm_max_ * omega_g_gm_;
+}
+
+void ErrorState::getNavigationState() {
+  auto fullState = navigation_state_ptr_->getState();
+  p_n_ = std::get<0>(fullState);
+  v_n_ = std::get<1>(fullState);
+  T_bn_ = std::get<2>(fullState);
+}
+
+Eigen::MatrixXd ErrorState::F() {
+  F_ << Frr(), Frv(), Fre(), Eigen::Matrix3d::Zero(), Eigen::Matrix3d::Zero(),
+        Fvr(), Fvv(), Fve(), T_bn_, Eigen::Matrix3d::Zero(),
+        Fer(), Fev(), Fee(), Eigen::Matrix3d::Zero(), T_bn_,
+        Eigen::Matrix3d::Zero(), Eigen::Matrix3d::Zero(), Eigen::Matrix3d::Zero(), Fa(), Eigen::Matrix3d::Zero(),
+        Eigen::Matrix3d::Zero(), Eigen::Matrix3d::Zero(), Eigen::Matrix3d::Zero(), Eigen::Matrix3d::Zero(), Fg();
+
+  return F_;
+}
+
+Eigen::MatrixXd ErrorState::getTransitionMatrix(double dt) {
+  Eigen::MatrixXd coeff = F() * dt;
+
+  return coeff.exp();
 }
 } // namespace EKF_INS

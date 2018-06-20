@@ -12,8 +12,8 @@
 namespace EKF_INS {
 class ErrorState {
 public:
-  ErrorState(std::shared_ptr<EKF::NavigationState> navigation_state_ptr);
-  auto getState();
+  ErrorState(std::shared_ptr<EKF_INS::NavigationState> navigation_state_ptr);
+  Eigen::VectorXd getState();
   void updateStateWithMeasurements(Eigen::Vector3d f_bi_b,
                                    Eigen::Vector3d omega_bi_b);
   void integrateState(double dt);
@@ -22,6 +22,7 @@ public:
   void setOmegaG(double omega_g_max) { omega_g_max_ = omega_g_max; }
   void setOmegaAgm(double omega_a_gm_max) { omega_a_gm_max_ = omega_a_gm_max; }
   void setOmegaGgm(double omega_g_gm_max) { omega_g_gm_max_ = omega_g_gm_max; }
+  Eigen::MatrixXd getTransitionMatrix(double dt);
 
 private:
   Eigen::Matrix3d Frr();
@@ -39,6 +40,7 @@ private:
   Eigen::Vector3d omega_g();
   Eigen::Vector3d omega_a_gm();
   Eigen::Vector3d omega_g_gm();
+  Eigen::MatrixXd F();
   void getNavigationState();
 
   Eigen::Vector3d delta_p_dot_n_, delta_p_n_;
@@ -46,11 +48,13 @@ private:
   Eigen::Vector3d epsilon_dot_n_, epsilon_n_;
   Eigen::Vector3d b_dot_a_, b_a_;
   Eigen::Vector3d b_dot_g_, b_g_;
+  Eigen::VectorXd delta_x_;
+  Eigen::MatrixXd F_;
 
   Eigen::Vector3d p_n_, v_n_;
   Eigen::Matrix3d T_bn_;
   Eigen::Vector3d f_bi_b_, omega_bi_b_;
-  std::shared_ptr<EKF::NavigationState> navigation_state_ptr_;
+  std::shared_ptr<EKF_INS::NavigationState> navigation_state_ptr_;
 
   std::random_device rd_;
   std::mt19937 gen_;
