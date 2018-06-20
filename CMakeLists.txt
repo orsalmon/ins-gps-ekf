@@ -3,7 +3,7 @@ project(EKF-INS)
 
 set(CMAKE_CXX_STANDARD 17)
 
-find_package(Boost REQUIRED)
+find_package(Boost REQUIRED COMPONENTS system)
 
 # Attempt to find Eigen using its own CMake module.
 # If that fails, fall back to cmake_modules package.
@@ -19,7 +19,7 @@ endif()
 
 find_package(PythonLibs 2.7)
 
-include_directories(include ${EIGEN3_INCLUDE_DIRS} 3rdparty)
+include_directories(include 3rdparty ${EIGEN3_INCLUDE_DIRS} PRIVATE ${Boost_INCLUDE_DIRS} ${PYTHON_INCLUDE_DIRS})
 
 file(GLOB EKF_INCLUDE
         "include/*.h")
@@ -28,5 +28,7 @@ file(GLOB EKF_SRC
         "src/*.cpp")
 
 add_library(EKF-INS SHARED ${EKF_SRC})
-target_include_directories(EKF-INS PRIVATE ${Boost_INCLUDE_DIRS} ${PYTHON_INCLUDE_DIRS})
 target_link_libraries(EKF-INS ${Boost_LIBRARIES} ${PYTHON_LIBRARIES})
+
+add_executable(simple_test tests/simple_test.cpp)
+target_link_libraries(simple_test EKF-INS ${PYTHON_LIBRARIES})

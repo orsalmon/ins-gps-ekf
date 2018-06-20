@@ -16,8 +16,8 @@ class System {
   void start();
 
  private:
-  std::shared_ptr<EKF::System> system_ptr_;
-  std::shared_ptr<EKF::Tracking> tracking_ptr_;
+  std::shared_ptr<EKF_INS::System> system_ptr_;
+  std::shared_ptr<EKF_INS::Tracking> tracking_ptr_;
 };
 } // namespace EKF_INS
 
