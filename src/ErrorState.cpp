@@ -41,11 +41,11 @@ void ErrorState::integrateState(double dt) {
 }
 
 void ErrorState::resetErrorState() {
-  delta_p_n_ = Eigen::Vector3d::Zero();
-  delta_v_n_ = Eigen::Vector3d::Zero();
-  epsilon_n_ = Eigen::Vector3d::Zero();
-  b_a_ = Eigen::Vector3d::Zero();
-  b_g_ = Eigen::Vector3d::Zero();
+  delta_p_n_.setZero();
+  delta_v_n_.setZero();
+  epsilon_n_.setZero();
+  b_a_.setZero();
+  b_g_.setZero();
 }
 
 Eigen::Matrix3d ErrorState::Frr() {

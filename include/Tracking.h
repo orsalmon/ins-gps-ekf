@@ -7,16 +7,18 @@
 
 #include "Core.h"
 #include "ErrorState.h"
-#include "NavigationState.h"
 #include "ErrorStateCovariance.h"
+#include "NavigationState.h"
+#include <chrono>
+#include <numeric>
+#include <vector>
 
 namespace EKF_INS {
 class Tracking {
 public:
   Tracking();
-  void updateTrackingWithMeasurements(Eigen::Vector3d f_bi_b,
-                                      Eigen::Vector3d omega_bi_b);
-  void setDeltaT(double dt) { dt_ = dt; }
+  void updateTrackingWithAccelerometer(Eigen::Vector3d f_bi_b);
+  void updateTrackingWithGyro(Eigen::Vector3d omega_bi_b);
   void setNavigationInitialState(const Eigen::Vector3d p,
                                  const Eigen::Vector3d v,
                                  const Eigen::Matrix3d T);
@@ -24,10 +26,20 @@ public:
   Eigen::VectorXd getErrorState() { return error_state_ptr_->getState(); }
 
 private:
+  void updateTrackingWithMeasurements(Eigen::Vector3d f_bi_b,
+                                      Eigen::Vector3d omega_bi_b);
+  void resetClock();
+  void checkAndUpdate();
+  Eigen::Vector3d calcVectorMean(std::vector<Eigen::Vector3d> measurments);
+  void updateDT();
+
   std::shared_ptr<EKF_INS::NavigationState> navigation_state_ptr_;
   std::shared_ptr<EKF_INS::ErrorState> error_state_ptr_;
   std::shared_ptr<EKF_INS::ErrorStateCovariance> error_state_covariance_ptr_;
-  double dt_;
+
+  std::vector<Eigen::Vector3d> f_measurments_, g_measurments_;
+  std::chrono::duration<double> dt_;
+  std::chrono::_V2::system_clock::time_point clock_;
 };
 } // namespace EKF_INS
 
