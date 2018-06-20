@@ -4,8 +4,8 @@
 
 #include "NavigationState.h"
 
-namespace EKF {
-NavigationState::NavigationState() {
+namespace EKF_INS {
+NavigationState::NavigationState() : g_n_({0, 0, 1*Utils::g}) {
   setState(Eigen::Vector3d::Zero(), Eigen::Vector3d::Zero(),
            Eigen::Matrix3d::Identity());
 }
@@ -35,7 +35,7 @@ void NavigationState::updateStateWithMeasurements(Eigen::Vector3d f_bi_b,
 void NavigationState::integrateState(double dt) {
   p_n_ += dt * p_dot_n_;
   v_n_ += dt * v_dot_n_;
-  T_bn_ += dt * T_dot_bn_; //TODO: can be more precise with sin/cos method
+  T_bn_ += dt * T_dot_bn_; // TODO: can be more precise with sin/cos method
 }
 
 Eigen::Matrix3d NavigationState::D() {
@@ -72,4 +72,4 @@ Eigen::Matrix3d NavigationState::Omega_ei_n() {
 
   return Omega_ei_n_;
 }
-} // namespace EKF
+} // namespace EKF_INS

@@ -4,9 +4,9 @@
 
 #include "System.h"
 
-namespace EKF {
+namespace EKF_INS {
 System::System() : system_ptr_(this) {
-  tracking_ptr_.reset(new EKF::Tracking());
+  tracking_ptr_.reset(new EKF_INS::Tracking());
 }
 
-} // namespace EKF
+} // namespace EKF_INS

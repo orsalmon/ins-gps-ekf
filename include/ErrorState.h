@@ -2,14 +2,14 @@
 // Created by Or Salmon on 18/05/18.
 //
 
-#ifndef EKF_ERRORSTATE_H
-#define EKF_ERRORSTATE_H
+#ifndef EKF_INS_ERRORSTATE_H
+#define EKF_INS_ERRORSTATE_H
 
 #include "Core.h"
 #include "NavigationState.h"
 #include <random>
 
-namespace EKF {
+namespace EKF_INS {
 class ErrorState {
 public:
   ErrorState(std::shared_ptr<EKF::NavigationState> navigation_state_ptr);
@@ -17,6 +17,7 @@ public:
   void updateStateWithMeasurements(Eigen::Vector3d f_bi_b,
                                    Eigen::Vector3d omega_bi_b);
   void integrateState(double dt);
+  void resetErrorState();
   void setOmegaA(double omega_a_max) { omega_a_max_ = omega_a_max; }
   void setOmegaG(double omega_g_max) { omega_g_max_ = omega_g_max; }
   void setOmegaAgm(double omega_a_gm_max) { omega_a_gm_max_ = omega_a_gm_max; }
@@ -59,6 +60,6 @@ private:
   enum Pose { phi, lambda, h };
   enum Vel { n, e, d };
 };
-} // namespace EKF
+} // namespace EKF_INS
 
-#endif // EKF_ERRORSTATE_H
+#endif // EKF_INS_ERRORSTATE_H

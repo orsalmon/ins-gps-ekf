@@ -2,13 +2,13 @@
 // Created by Or Salmon on 18/05/18.
 //
 
-#ifndef EKF_UTILS_H
-#define EKF_UTILS_H
+#ifndef EKF_INS_UTILS_H
+#define EKF_INS_UTILS_H
 
 #include <Eigen/Eigen>
 #include <math.h>
 
-namespace EKF {
+namespace EKF_INS {
 class Utils {
 public:
   static inline double Rm(double phi) {
@@ -60,6 +60,6 @@ public:
     Eigen::Matrix3d T_bn;
   };
 };
-} // namespace EKF
+} // namespace EKF_INS
 
-#endif // EKF_UTILS_H
+#endif // EKF_INS_UTILS_H

@@ -2,12 +2,12 @@
 // Created by Or Salmon on 18/05/18.
 //
 
-#ifndef EKF_NAVIGATIONSTATE_H
-#define EKF_NAVIGATIONSTATE_H
+#ifndef EKF_INS_NAVIGATIONSTATE_H
+#define EKF_INS_NAVIGATIONSTATE_H
 
 #include "Core.h"
 
-namespace EKF {
+namespace EKF_INS {
 class NavigationState {
 public:
   NavigationState();
@@ -27,11 +27,11 @@ private:
   Eigen::Vector3d v_dot_n_, v_n_;
   Eigen::Matrix3d T_dot_bn_, T_bn_;
 
-  const Eigen::Vector3d g_n_ = {0, 0, Utils::g}; // TODO: can be more precise
+  const Eigen::Vector3d g_n_; // TODO: can be more precise
 
   enum Pose { phi, lambda, h };
   enum Vel { n, e, d };
 };
-} // namespace EKF
+} // namespace EKF_INS
 
-#endif // EKF_NAVIGATIONSTATE_H
+#endif // EKF_INS_NAVIGATIONSTATE_H

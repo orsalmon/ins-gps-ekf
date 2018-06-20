@@ -4,11 +4,13 @@
 
 #include "ErrorState.h"
 
-namespace EKF {
+namespace EKF_INS {
 ErrorState::ErrorState(
-    std::shared_ptr<EKF::NavigationState> navigation_state_ptr)
+    std::shared_ptr<EKF_INS::NavigationState> navigation_state_ptr)
     : navigation_state_ptr_(navigation_state_ptr), gen_(rd_()),
-      dis_(-1.0, 1.0)  {}
+      dis_(-1.0, 1.0) {
+  resetErrorState();
+}
 
 void ErrorState::getNavigationState() {
   auto fullState = navigation_state_ptr_->getState();
@@ -38,6 +40,14 @@ void ErrorState::integrateState(double dt) {
   epsilon_n_ += dt * epsilon_dot_n_;
   b_a_ += dt * b_dot_a_;
   b_g_ += dt * b_dot_g_;
+}
+
+void ErrorState::resetErrorState() {
+  delta_p_n_ = Eigen::Vector3d::Zero();
+  delta_v_n_ = Eigen::Vector3d::Zero();
+  epsilon_n_ = Eigen::Vector3d::Zero();
+  b_a_ = Eigen::Vector3d::Zero();
+  b_g_ = Eigen::Vector3d::Zero();
 }
 
 Eigen::Matrix3d ErrorState::Frr() {
@@ -176,4 +186,4 @@ Eigen::Vector3d ErrorState::omega_g_gm() {
 
   return omega_g_gm_max_ * omega_g_gm_;
 }
-} // namespace EKF
+} // namespace EKF_INS

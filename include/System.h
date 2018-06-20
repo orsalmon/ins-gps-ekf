@@ -2,13 +2,13 @@
 // Created by Or Salmon on 18/05/18.
 //
 
-#ifndef EKF_SYSTEM_H
-#define EKF_SYSTEM_H
+#ifndef EKF_INS_SYSTEM_H
+#define EKF_INS_SYSTEM_H
 
 #include "Core.h"
 #include "Tracking.h"
 
-namespace EKF {
+namespace EKF_INS {
 class System {
  public:
   System();
@@ -19,6 +19,6 @@ class System {
   std::shared_ptr<EKF::System> system_ptr_;
   std::shared_ptr<EKF::Tracking> tracking_ptr_;
 };
-} // namespace EKF
+} // namespace EKF_INS
 
-#endif // EKF_SYSTEM_H
+#endif // EKF_INS_SYSTEM_H
