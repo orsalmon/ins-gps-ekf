@@ -11,5 +11,6 @@
 #include <Utils.h>
 #include <memory>
 #include <tuple>
+#include <iostream>
 
 #endif //EKF_CORE_H

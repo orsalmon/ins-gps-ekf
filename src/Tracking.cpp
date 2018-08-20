@@ -44,26 +44,19 @@ void Tracking::resetClock() {
 
 void Tracking::checkAndUpdate() {
   if (!f_measurments_.empty() && !g_measurments_.empty()) {
-    Eigen::Vector3d f_mean = calcVectorMean(f_measurments_);
-    Eigen::Vector3d g_mean = calcVectorMean(g_measurments_);
+    Eigen::Vector3d f_mean = Utils::calcMeanVector(f_measurments_);
+    Eigen::Vector3d g_mean = Utils::calcMeanVector(g_measurments_);
     updateDT();
     updateTrackingWithMeasurements(f_mean, g_mean);
     resetClock();
   }
 }
 
-Eigen::Vector3d
-Tracking::calcVectorMean(std::vector<Eigen::Vector3d> measurments) {
-  Eigen::Vector3d mean;
-  mean.setZero();
-  for (int k = 0; k < measurments.size(); ++k) {
-    for (int i = 0; i < 3; ++i) {
-      mean(i) = mean(i) + 1 / k * (measurments.at(k)(i) - mean(i));
-    }
-  }
-}
-
 void Tracking::updateDT() {
   dt_ = std::chrono::high_resolution_clock::now() - clock_;
+}
+
+void Tracking::setQMatrix(Eigen::MatrixXd Q) {
+  error_state_covariance_ptr_->setQMatrix(Q);
 }
 } // namespace EKF_INS

@@ -14,7 +14,10 @@
 #include <vector>
 
 namespace EKF_INS {
+class EKF;
+
 class Tracking {
+  friend class EKF;
 public:
   Tracking();
   void updateTrackingWithAccelerometer(Eigen::Vector3d f_bi_b);
@@ -24,13 +27,18 @@ public:
                                  const Eigen::Matrix3d T);
   auto getNavigationState() { return navigation_state_ptr_->getState(); }
   Eigen::VectorXd getErrorState() { return error_state_ptr_->getState(); }
+  Eigen::MatrixXd getErrorStateCovariance() {
+    return error_state_covariance_ptr_->getErrorStateCovariance();
+  }
+
+ protected:
+  void resetClock();
+  void setQMatrix(Eigen::MatrixXd Q);
 
 private:
   void updateTrackingWithMeasurements(Eigen::Vector3d f_bi_b,
                                       Eigen::Vector3d omega_bi_b);
-  void resetClock();
   void checkAndUpdate();
-  Eigen::Vector3d calcVectorMean(std::vector<Eigen::Vector3d> measurments);
   void updateDT();
 
   std::shared_ptr<EKF_INS::NavigationState> navigation_state_ptr_;

@@ -46,6 +46,17 @@ public:
     return eulerAngles;
   }
 
+  template <class T> static T calcMeanVector(std::vector<T> measurments) {
+    T mean;
+    mean.setZero();
+    for (int n = 0; n < measurments.size(); ++n) {
+      for (int i = 0; i < mean.rows(); ++i) {
+        mean(i) = mean(i) + 1 / n * (measurments.at(n)(i) - mean(i));
+      }
+    }
+    return mean;
+  }
+
   static constexpr double Re = 6378.137E3; // Earth semi-major axis [m]
   static constexpr double e = 0.081819;    // Earth eccentricity
   static constexpr double e2 = std::pow(e, 2);
