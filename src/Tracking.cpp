@@ -46,6 +46,8 @@ void Tracking::checkAndUpdate() {
   if (!f_measurments_.empty() && !g_measurments_.empty()) {
     Eigen::Vector3d f_mean = Utils::calcMeanVector(f_measurments_);
     Eigen::Vector3d g_mean = Utils::calcMeanVector(g_measurments_);
+    f_measurments_.clear();
+    g_measurments_.clear();
     updateDT();
     updateTrackingWithMeasurements(f_mean, g_mean);
     resetClock();
