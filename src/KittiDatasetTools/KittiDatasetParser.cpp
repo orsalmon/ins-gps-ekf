@@ -3,6 +3,7 @@
 //
 
 #include "KittiDatasetTools/KittiDatasetParser.h"
+#include <thread>
 
 namespace kitti_dataset_tools {
 KittiDatasetParser::KittiDatasetParser(std::string path_to_oxts_folder)
@@ -117,7 +118,7 @@ void KittiDatasetParser::startPlayingData(EKF_INS::EKF &ekf) {
   ekf.setInitialState(p_0, Eigen::Vector3d::Zero(),
                       Eigen::Matrix3d::Identity());
   ekf.start();
-  for (int i = 0; i < timestamp_vec_.size(); ++i) {
+  for (int i = 1; i < timestamp_vec_.size(); ++i) {
     Eigen::Vector3d acc((*accelerometer_vec_)(i, 0),
                         (*accelerometer_vec_)(i, 1),
                         (*accelerometer_vec_)(i, 2));
@@ -126,6 +127,12 @@ void KittiDatasetParser::startPlayingData(EKF_INS::EKF &ekf) {
     ekf.updateWithInertialMeasurement(acc, EKF_INS::Type::ACCELEROMETER);
     ekf.updateWithInertialMeasurement(gyro, EKF_INS::Type::GYRO);
 
+    std::vector<Eigen::Matrix<double, 6, 1>> gps_data;
+    gps_data.push_back((*gps_vec_).row(i).transpose());
+    ekf.updateWithGPSMeasurements(gps_data);
+
+    uint64_t dt = (timestamp_vec_.at(i) - timestamp_vec_.at(i-1));
+    std::this_thread::sleep_for(std::chrono::duration<uint64_t , std::nano>(dt));
   }
 }
 } // namespace kitti_dataset_tools
