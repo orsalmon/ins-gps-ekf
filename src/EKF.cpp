@@ -6,8 +6,7 @@
 
 namespace EKF_INS {
 EKF::EKF()
-    : tracker_(new EKF_INS::Tracking()), Q_(15, 15), H_(6, 15),
-      is_running_(false) {
+    : tracker_(new EKF_INS::Tracking()), Q_(15, 15), R_(6, 6), H_(6, 15), is_running_(false) {
   Q_.setZero();
   R_.setZero();
   H_.setZero();
@@ -49,9 +48,8 @@ void EKF::updateWithGPSMeasurements(
 
   // Arrange gps data in error state manner
   auto gps_data_mean = Utils::calcMeanVector(gps_data);
-  Eigen::VectorXd pos_vel_state;
-  pos_vel_state << std::get<0>(ins_navigation_state_),
-      std::get<1>(ins_navigation_state_);
+  Eigen::VectorXd pos_vel_state(6);
+  pos_vel_state << std::get<0>(ins_navigation_state_), std::get<1>(ins_navigation_state_);
 
   // Calculate measurement vector
   Eigen::VectorXd z = pos_vel_state - gps_data_mean;
