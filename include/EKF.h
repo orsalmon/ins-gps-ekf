@@ -33,7 +33,7 @@ class EKF {
       ins_navigation_state_, fixed_navigation_state_;
 
   Eigen::MatrixXd Q_;
-  Eigen::Matrix3d R_;
+  Eigen::MatrixXd R_;
   Eigen::MatrixXd H_;
 
   bool is_running_;
