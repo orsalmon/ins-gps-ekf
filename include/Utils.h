@@ -51,7 +51,7 @@ public:
     mean.setZero();
     for (int n = 0; n < measurments.size(); ++n) {
       for (int i = 0; i < mean.rows(); ++i) {
-        mean(i) = mean(i) + 1 / n * (measurments.at(n)(i) - mean(i));
+        mean(i) = mean(i) + 1 / (n+1) * (measurments.at(n)(i) - mean(i));
       }
     }
     return mean;
