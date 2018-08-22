@@ -37,6 +37,10 @@ class EKF {
   Eigen::MatrixXd H_;
 
   bool is_running_;
+
+  spdlog::logger *logger_;
+  std::shared_ptr<spdlog::sinks::stdout_color_sink_mt> console_sink_;
+  std::shared_ptr<spdlog::sinks::rotating_file_sink_mt> file_sink_;
 };
 } // namespace EKF_INS
 

@@ -5,18 +5,35 @@
 #include "EKF.h"
 
 namespace EKF_INS {
-EKF::EKF()
-    : tracker_(new EKF_INS::Tracking()), Q_(15, 15), R_(6, 6), H_(6, 15), is_running_(false) {
+EKF::EKF() : tracker_(new EKF_INS::Tracking()), Q_(15, 15), R_(6, 6), H_(6, 15), is_running_(false) {
+  try {
+    console_sink_ = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+    console_sink_->set_level(spdlog::level::info);
+    console_sink_->set_pattern("[%^%l%$] %v");
+
+    file_sink_ = std::make_shared<spdlog::sinks::rotating_file_sink_mt>("ekf_ins.log", 1048576 * 5, 3);
+    file_sink_->set_level(spdlog::level::trace);
+    file_sink_->set_pattern("%+");
+
+    logger_ = new spdlog::logger("ekf_ins_logger", {console_sink_, file_sink_});
+    logger_->set_level(spdlog::level::debug);
+    logger_->flush_on(spdlog::level::debug);
+
+    logger_->info("Logging session has started");
+  }
+  catch (const spdlog::spdlog_ex &ex) {
+    std::cout << "Log initialization failed: " << ex.what() << std::endl;
+  }
+
   Q_.setZero();
   R_.setZero();
   H_.setZero();
   H_.topLeftCorner(6, 6).setIdentity();
 }
 
-void EKF::updateWithInertialMeasurement(Eigen::Vector3d data,
-                                        EKF_INS::Type type) {
+void EKF::updateWithInertialMeasurement(Eigen::Vector3d data, EKF_INS::Type type) {
   if (!is_running_) {
-    std::cout << "EKF not running yet." << std::endl;
+    logger_->warn("EKF::updateWithInertialMeasurement - EKF not running yet");
     return;
   }
   switch (type) {
@@ -27,22 +44,20 @@ void EKF::updateWithInertialMeasurement(Eigen::Vector3d data,
       tracker_->updateTrackingWithGyro(data);
       break;
     default:
-      std::cout << "Can't accept this kind of measurement!" << std::endl;
-      return;
+      logger_->error("EKF::updateWithInertialMeasurement - Can't accept this kind of measurement!");
   }
   ins_navigation_state_ = tracker_->getNavigationState();
   ins_error_state_ = tracker_->getErrorState();
   ins_error_state_covariance_ = tracker_->getErrorStateCovariance();
 }
 
-void EKF::updateWithGPSMeasurements(
-    std::vector<Eigen::Matrix<double, 6, 1>> gps_data) {
+void EKF::updateWithGPSMeasurements(std::vector<Eigen::Matrix<double, 6, 1>> gps_data) {
   if (!is_running_) {
-    std::cout << "EKF not running yet." << std::endl;
+    logger_->warn("EKF::updateWithGPSMeasurements - EKF not running yet");
     return;
   }
   if (gps_data.empty()) {
-    std::cout << "Got empty GPS data." << std::endl;
+    logger_->warn("EKF::updateWithGPSMeasurements - Got empty GPS data");
     return;
   }
 
