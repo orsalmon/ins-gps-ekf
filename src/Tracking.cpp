@@ -6,10 +6,15 @@
 
 namespace EKF_INS {
 Tracking::Tracking() {
+  try {
+    logger_ = spdlog::get("ekf_ins_logger");
+  }
+  catch (const spdlog::spdlog_ex &ex) {
+    std::cout << "Log initialization failed: " << ex.what() << std::endl;
+  }
   navigation_state_ptr_.reset(new EKF_INS::NavigationState());
   error_state_ptr_.reset(new EKF_INS::ErrorState(navigation_state_ptr_));
-  error_state_covariance_ptr_.reset(
-      new EKF_INS::ErrorStateCovariance(error_state_ptr_));
+  error_state_covariance_ptr_.reset(new EKF_INS::ErrorStateCovariance(error_state_ptr_));
 
   resetClock();
 }
@@ -30,6 +35,7 @@ void Tracking::updateTrackingWithMeasurements(Eigen::Vector3d f_bi_b,
   navigation_state_ptr_->integrateState(dt_.count());
   error_state_ptr_->updateStateWithMeasurements(f_bi_b, omega_bi_b);
   error_state_ptr_->integrateState(dt_.count());
+  error_state_covariance_ptr_->updateCovarianceMatrix(dt_.count());
 }
 
 void Tracking::setNavigationInitialState(const Eigen::Vector3d p,
