@@ -36,8 +36,7 @@ public:
   void setQMatrix(Eigen::MatrixXd Q);
 
 private:
-  void updateTrackingWithMeasurements(Eigen::Vector3d f_bi_b,
-                                      Eigen::Vector3d omega_bi_b);
+  void updateTrackingWithMeasurements(Eigen::Vector3d f_bi_b, Eigen::Vector3d omega_bi_b);
   void checkAndUpdate();
   void updateDT();
 
@@ -48,6 +47,8 @@ private:
   std::vector<Eigen::Vector3d> f_measurments_, g_measurments_;
   std::chrono::duration<double> dt_;
   std::chrono::_V2::system_clock::time_point clock_;
+
+  std::shared_ptr<spdlog::logger> logger_;
 };
 } // namespace EKF_INS
 

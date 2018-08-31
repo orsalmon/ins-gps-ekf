@@ -9,16 +9,14 @@
 
 namespace EKF_INS {
 class NavigationState {
-public:
+ public:
   NavigationState();
-  void setState(const Eigen::Vector3d p, const Eigen::Vector3d v,
-                const Eigen::Matrix3d T);
+  void setState(const Eigen::Vector3d p, const Eigen::Vector3d v, const Eigen::Matrix3d T);
   std::tuple<Eigen::Vector3d, Eigen::Vector3d, Eigen::Matrix3d> getState();
-  void updateStateWithMeasurements(Eigen::Vector3d f_bi_b,
-                                   Eigen::Vector3d omega_bi_b);
+  void updateStateWithMeasurements(Eigen::Vector3d f_bi_b, Eigen::Vector3d omega_bi_b);
   void integrateState(double dt);
 
-private:
+ private:
   Eigen::Matrix3d D();
   Eigen::Matrix3d Omega_ne_n();
   Eigen::Matrix3d Omega_ei_n();

@@ -5,25 +5,21 @@
 #include "NavigationState.h"
 
 namespace EKF_INS {
-NavigationState::NavigationState() : g_n_({0, 0, 1*Utils::g}) {
-  setState(Eigen::Vector3d::Zero(), Eigen::Vector3d::Zero(),
-           Eigen::Matrix3d::Identity());
+NavigationState::NavigationState() : g_n_({0, 0, 1 * Utils::g}) {
+  setState(Eigen::Vector3d::Zero(), Eigen::Vector3d::Zero(), Eigen::Matrix3d::Identity());
 }
 
-void NavigationState::setState(const Eigen::Vector3d p, const Eigen::Vector3d v,
-                               const Eigen::Matrix3d T) {
+void NavigationState::setState(const Eigen::Vector3d p, const Eigen::Vector3d v, const Eigen::Matrix3d T) {
   p_n_ = p;
   v_n_ = v;
   T_bn_ = T;
 }
 
-std::tuple<Eigen::Vector3d, Eigen::Vector3d, Eigen::Matrix3d>
-NavigationState::getState() {
+std::tuple<Eigen::Vector3d, Eigen::Vector3d, Eigen::Matrix3d> NavigationState::getState() {
   return std::make_tuple(p_n_, v_n_, T_bn_);
 }
 
-void NavigationState::updateStateWithMeasurements(Eigen::Vector3d f_bi_b,
-                                                  Eigen::Vector3d omega_bi_b) {
+void NavigationState::updateStateWithMeasurements(Eigen::Vector3d f_bi_b, Eigen::Vector3d omega_bi_b) {
   p_dot_n_ = D() * v_n_;
   v_dot_n_ = T_bn_ * f_bi_b + g_n_ - (Omega_ne_n() + 2 * Omega_ei_n()) * v_n_;
 
@@ -52,8 +48,7 @@ Eigen::Matrix3d NavigationState::Omega_ne_n() {
   Eigen::Vector3d omega_ne_n_;
   omega_ne_n_(0) = v_n_(e) / (Utils::Rn(p_n_(phi)) + p_n_(h));
   omega_ne_n_(1) = -v_n_(n) / (Utils::Rm(p_n_(phi)) + p_n_(h));
-  omega_ne_n_(2) =
-      -(v_n_(e) * std::tan(p_n_(phi))) / (Utils::Rn(p_n_(phi)) + p_n_(h));
+  omega_ne_n_(2) = -(v_n_(e) * std::tan(p_n_(phi))) / (Utils::Rn(p_n_(phi)) + p_n_(h));
 
   Eigen::Matrix3d Omega_ne_n_;
   Utils::toSkewSymmetricMatrix(Omega_ne_n_, omega_ne_n_);

@@ -5,10 +5,8 @@
 #include "ErrorState.h"
 
 namespace EKF_INS {
-ErrorState::ErrorState(
-    std::shared_ptr<EKF_INS::NavigationState> navigation_state_ptr)
-    : navigation_state_ptr_(navigation_state_ptr), gen_(rd_()), dis_(-1.0, 1.0),
-      delta_x_(15), F_(15, 15) {
+ErrorState::ErrorState(std::shared_ptr<EKF_INS::NavigationState> navigation_state_ptr)
+    : navigation_state_ptr_(navigation_state_ptr), gen_(rd_()), dis_(-1.0, 1.0), delta_x_(15), F_(15, 15) {
   resetErrorState();
 }
 
@@ -17,17 +15,14 @@ Eigen::VectorXd ErrorState::getState() {
   return delta_x_;
 }
 
-void ErrorState::updateStateWithMeasurements(Eigen::Vector3d f_bi_b,
-                                             Eigen::Vector3d omega_bi_b) {
+void ErrorState::updateStateWithMeasurements(Eigen::Vector3d f_bi_b, Eigen::Vector3d omega_bi_b) {
   getNavigationState();
   f_bi_b_ = f_bi_b;
   omega_bi_b_ = omega_bi_b;
 
   delta_p_dot_n_ = Frr() * delta_p_n_ + Frv() * delta_v_n_ + Fre() * epsilon_n_;
-  delta_v_dot_n_ = Fvr() * delta_p_n_ + Fvv() * delta_v_n_ +
-                   Fve() * epsilon_n_ + T_bn_ * b_a_ + T_bn_ * omega_a();
-  epsilon_dot_n_ = Fer() * delta_p_n_ + Fev() * delta_v_n_ +
-                   Fee() * epsilon_n_ + T_bn_ * b_g_ + T_bn_ * omega_g();
+  delta_v_dot_n_ = Fvr() * delta_p_n_ + Fvv() * delta_v_n_ + Fve() * epsilon_n_ + T_bn_ * b_a_ + T_bn_ * omega_a();
+  epsilon_dot_n_ = Fer() * delta_p_n_ + Fev() * delta_v_n_ + Fee() * epsilon_n_ + T_bn_ * b_g_ + T_bn_ * omega_g();
   b_dot_a_ = Fa() * b_a_ + omega_a_gm();
   b_dot_g_ = Fg() * b_g_ + omega_g_gm();
 }
@@ -51,11 +46,8 @@ void ErrorState::resetErrorState() {
 Eigen::Matrix3d ErrorState::Frr() {
   Eigen::Matrix3d Frr_ = Eigen::Matrix3d::Zero();
   Frr_(0, 2) = -v_n_(n) / std::pow(Utils::Rm(p_n_(phi)) + p_n_(h), 2);
-  Frr_(1, 0) =
-      v_n_(e) * std::sin(p_n_(phi)) /
-      (std::pow(std::cos(p_n_(phi)), 2) * (Utils::Rn(p_n_(phi) + p_n_(h))));
-  Frr_(1, 2) = -v_n_(e) / (std::cos(p_n_(phi)) *
-                           std::pow(Utils::Rn(p_n_(phi)) + p_n_(h), 2));
+  Frr_(1, 0) = v_n_(e) * std::sin(p_n_(phi)) / (std::pow(std::cos(p_n_(phi)), 2) * (Utils::Rn(p_n_(phi) + p_n_(h))));
+  Frr_(1, 2) = -v_n_(e) / (std::cos(p_n_(phi)) * std::pow(Utils::Rn(p_n_(phi)) + p_n_(h), 2));
 
   return Frr_;
 }
@@ -73,27 +65,17 @@ Eigen::Matrix3d ErrorState::Fre() { return Eigen::Matrix3d::Zero(); }
 
 Eigen::Matrix3d ErrorState::Fvr() {
   Eigen::Matrix3d Fvr_ = Eigen::Matrix3d::Zero();
-  Fvr_(0, 0) = -2 * v_n_(e) * Utils::omega_ei * std::cos(p_n_(phi)) -
-               std::pow(v_n_(e), 2) / ((Utils::Rn(p_n_(phi)) + p_n_(h)) *
-                                       std::pow(std::cos(p_n_(phi)), 2));
-  Fvr_(0, 2) =
-      -v_n_(d) * v_n_(n) / std::pow(Utils::Rm(p_n_(phi)) + p_n_(h), 2) +
-      std::pow(v_n_(e), 2) * std::tan(p_n_(phi)) /
-          std::pow(Utils::Rn(p_n_(phi)) + p_n_(h), 2);
-  Fvr_(1, 0) =
-      2 * Utils::omega_ei *
-          (-v_n_(d) * std::sin(p_n_(phi)) + v_n_(n) * std::cos(p_n_(phi))) +
-      v_n_(n) * v_n_(e) /
-          ((Utils::Rn(p_n_(phi)) + p_n_(h)) * std::pow(std::cos(p_n_(phi)), 2));
-  Fvr_(1, 2) =
-      -v_n_(d) * v_n_(e) / std::pow(Utils::Rn(p_n_(phi)) + p_n_(h), 2) -
-      v_n_(n) * v_n_(e) * std::tan(p_n_(phi)) /
-          std::pow(Utils::Rn(p_n_(phi)) + p_n_(h), 2);
+  Fvr_(0, 0) = -2 * v_n_(e) * Utils::omega_ei * std::cos(p_n_(phi))
+      - std::pow(v_n_(e), 2) / ((Utils::Rn(p_n_(phi)) + p_n_(h)) * std::pow(std::cos(p_n_(phi)), 2));
+  Fvr_(0, 2) = -v_n_(d) * v_n_(n) / std::pow(Utils::Rm(p_n_(phi)) + p_n_(h), 2)
+      + std::pow(v_n_(e), 2) * std::tan(p_n_(phi)) / std::pow(Utils::Rn(p_n_(phi)) + p_n_(h), 2);
+  Fvr_(1, 0) = 2 * Utils::omega_ei * (-v_n_(d) * std::sin(p_n_(phi)) + v_n_(n) * std::cos(p_n_(phi)))
+      + v_n_(n) * v_n_(e) / ((Utils::Rn(p_n_(phi)) + p_n_(h)) * std::pow(std::cos(p_n_(phi)), 2));
+  Fvr_(1, 2) = -v_n_(d) * v_n_(e) / std::pow(Utils::Rn(p_n_(phi)) + p_n_(h), 2)
+      - v_n_(n) * v_n_(e) * std::tan(p_n_(phi)) / std::pow(Utils::Rn(p_n_(phi)) + p_n_(h), 2);
   Fvr_(2, 0) = 2 * v_n_(e) * Utils::omega_ei * std::sin(p_n_(phi));
-  Fvr_(2, 2) =
-      std::pow(v_n_(n), 2) / std::pow(Utils::Rm(p_n_(phi)) + p_n_(h), 2) +
-      std::pow(v_n_(e), 2) / std::pow(Utils::Rn(p_n_(phi)) + p_n_(h), 2) -
-      2 * Utils::g / (Utils::Re + p_n_(h));
+  Fvr_(2, 2) = std::pow(v_n_(n), 2) / std::pow(Utils::Rm(p_n_(phi)) + p_n_(h), 2) + std::pow(v_n_(e), 2) / std::pow(Utils::Rn(p_n_(phi)) + p_n_(h), 2)
+      - 2 * Utils::g / (Utils::Re + p_n_(h));
 
   return Fvr_;
 }
@@ -101,19 +83,13 @@ Eigen::Matrix3d ErrorState::Fvr() {
 Eigen::Matrix3d ErrorState::Fvv() {
   Eigen::Matrix3d Fvv_ = Eigen::Matrix3d::Zero();
   Fvv_(0, 0) = v_n_(d) / (Utils::Rm(p_n_(phi)) + p_n_(h));
-  Fvv_(0, 1) =
-      -2 * v_n_(e) * std::tan(p_n_(phi)) / (Utils::Rn(p_n_(phi)) + p_n_(h)) -
-      2 * Utils::omega_ei * std::sin(p_n_(phi));
+  Fvv_(0, 1) = -2 * v_n_(e) * std::tan(p_n_(phi)) / (Utils::Rn(p_n_(phi)) + p_n_(h)) - 2 * Utils::omega_ei * std::sin(p_n_(phi));
   Fvv_(0, 2) = v_n_(n) / (Utils::Rm(p_n_(phi)) + p_n_(h));
-  Fvv_(1, 0) = 2 * Utils::omega_ei * std::sin(p_n_(phi)) +
-               v_n_(e) * std::tan(p_n_(phi)) / (Utils::Rn(p_n_(phi)) + p_n_(h));
-  Fvv_(1, 1) = v_n_(d) / (Utils::Rn(p_n_(phi)) + p_n_(h)) +
-               v_n_(n) * std::tan(p_n_(phi)) / (Utils::Rn(p_n_(phi)) + p_n_(h));
-  Fvv_(1, 2) = 2 * Utils::omega_ei * std::cos(p_n_(phi)) +
-               v_n_(e) * std::tan(p_n_(phi)) / (Utils::Rn(p_n_(phi)) + p_n_(h));
+  Fvv_(1, 0) = 2 * Utils::omega_ei * std::sin(p_n_(phi)) + v_n_(e) * std::tan(p_n_(phi)) / (Utils::Rn(p_n_(phi)) + p_n_(h));
+  Fvv_(1, 1) = v_n_(d) / (Utils::Rn(p_n_(phi)) + p_n_(h)) + v_n_(n) * std::tan(p_n_(phi)) / (Utils::Rn(p_n_(phi)) + p_n_(h));
+  Fvv_(1, 2) = 2 * Utils::omega_ei * std::cos(p_n_(phi)) + v_n_(e) * std::tan(p_n_(phi)) / (Utils::Rn(p_n_(phi)) + p_n_(h));
   Fvv_(2, 0) = -2 * v_n_(n) / (Utils::Rm(p_n_(phi)) + p_n_(h));
-  Fvv_(2, 1) = -2 * Utils::omega_ei * std::cos(p_n_(phi)) -
-               2 * v_n_(e) / (Utils::Rn(p_n_(phi)) + p_n_(h));
+  Fvv_(2, 1) = -2 * Utils::omega_ei * std::cos(p_n_(phi)) - 2 * v_n_(e) / (Utils::Rn(p_n_(phi)) + p_n_(h));
 
   return Fvv_;
 }
@@ -131,11 +107,8 @@ Eigen::Matrix3d ErrorState::Fer() {
   Fer_(0, 0) = Utils::omega_ei * std::sin(p_n_(phi));
   Fer_(0, 2) = v_n_(e) / std::pow(Utils::Rn(p_n_(phi)) + p_n_(h), 2);
   Fer_(1, 2) = -v_n_(n) / std::pow(Utils::Rm(p_n_(phi)) + p_n_(h), 2);
-  Fer_(2, 0) = Utils::omega_ei * std::cos(p_n_(phi)) +
-               v_n_(e) / ((Utils::Rn(p_n_(phi) + p_n_(h))) *
-                          std::pow(std::cos(p_n_(phi)), 2));
-  Fer_(2, 2) = -v_n_(e) * std::tan(p_n_(phi)) /
-               std::pow(Utils::Rn(p_n_(phi)) + p_n_(h), 2);
+  Fer_(2, 0) = Utils::omega_ei * std::cos(p_n_(phi)) + v_n_(e) / ((Utils::Rn(p_n_(phi) + p_n_(h))) * std::pow(std::cos(p_n_(phi)), 2));
+  Fer_(2, 2) = -v_n_(e) * std::tan(p_n_(phi)) / std::pow(Utils::Rn(p_n_(phi)) + p_n_(h), 2);
 
   return Fer_;
 }
@@ -194,10 +167,10 @@ void ErrorState::getNavigationState() {
 
 Eigen::MatrixXd ErrorState::F() {
   F_ << Frr(), Frv(), Fre(), Eigen::Matrix3d::Zero(), Eigen::Matrix3d::Zero(),
-        Fvr(), Fvv(), Fve(), T_bn_, Eigen::Matrix3d::Zero(),
-        Fer(), Fev(), Fee(), Eigen::Matrix3d::Zero(), T_bn_,
-        Eigen::Matrix3d::Zero(), Eigen::Matrix3d::Zero(), Eigen::Matrix3d::Zero(), Fa(), Eigen::Matrix3d::Zero(),
-        Eigen::Matrix3d::Zero(), Eigen::Matrix3d::Zero(), Eigen::Matrix3d::Zero(), Eigen::Matrix3d::Zero(), Fg();
+      Fvr(), Fvv(), Fve(), T_bn_, Eigen::Matrix3d::Zero(),
+      Fer(), Fev(), Fee(), Eigen::Matrix3d::Zero(), T_bn_,
+      Eigen::Matrix3d::Zero(), Eigen::Matrix3d::Zero(), Eigen::Matrix3d::Zero(), Fa(), Eigen::Matrix3d::Zero(),
+      Eigen::Matrix3d::Zero(), Eigen::Matrix3d::Zero(), Eigen::Matrix3d::Zero(), Eigen::Matrix3d::Zero(), Fg();
 
   return F_;
 }

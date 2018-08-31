@@ -7,6 +7,7 @@
 
 #include <Eigen/Eigen>
 #include <math.h>
+#include <iostream>
 
 namespace EKF_INS {
 class Utils {

@@ -11,11 +11,10 @@
 
 namespace EKF_INS {
 class ErrorState {
-public:
+ public:
   ErrorState(std::shared_ptr<EKF_INS::NavigationState> navigation_state_ptr);
   Eigen::VectorXd getState();
-  void updateStateWithMeasurements(Eigen::Vector3d f_bi_b,
-                                   Eigen::Vector3d omega_bi_b);
+  void updateStateWithMeasurements(Eigen::Vector3d f_bi_b, Eigen::Vector3d omega_bi_b);
   void integrateState(double dt);
   void resetErrorState();
   void setOmegaA(double omega_a_max) { omega_a_max_ = omega_a_max; }
@@ -24,7 +23,7 @@ public:
   void setOmegaGgm(double omega_g_gm_max) { omega_g_gm_max_ = omega_g_gm_max; }
   Eigen::MatrixXd getTransitionMatrix(double dt);
 
-private:
+ private:
   Eigen::Matrix3d Frr();
   Eigen::Matrix3d Frv();
   Eigen::Matrix3d Fre();
