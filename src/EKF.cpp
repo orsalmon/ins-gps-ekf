@@ -5,7 +5,7 @@
 #include "EKF.h"
 
 namespace EKF_INS {
-EKF::EKF() : tracker_(new EKF_INS::Tracking()), Q_(15, 15), R_(6, 6), H_(6, 15), is_running_(false) {
+EKF::EKF() : Q_(15, 15), R_(6, 6), H_(6, 15), is_running_(false) {
   try {
     console_sink_ = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
     console_sink_->set_level(spdlog::level::info);
@@ -24,9 +24,19 @@ EKF::EKF() : tracker_(new EKF_INS::Tracking()), Q_(15, 15), R_(6, 6), H_(6, 15),
   catch (const spdlog::spdlog_ex &ex) {
     std::cout << "Log initialization failed: " << ex.what() << std::endl;
   }
+  tracker_ = new EKF_INS::Tracking();
 
-  Q_.setZero();
-  R_.setZero();
+  // Initializing default Q matrix
+  Eigen::VectorXd q_diag(15);
+  q_diag << 0.01, 0.01, 1.0, 0.01, 0.01, 1.0, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01;
+  Q_ = q_diag.asDiagonal();
+  tracker_->setQMatrix(Q_);
+
+  // Initializing default R matrix
+  Eigen::VectorXd r_diag(6);
+  r_diag << 0.000001, 0.000001, 0.000001, 0.000001, 0.000001, 0.000001;
+  R_ = r_diag.asDiagonal();
+
   H_.setZero();
   H_.topLeftCorner(6, 6).setIdentity();
 }
@@ -75,8 +85,8 @@ void EKF::updateWithGPSMeasurements(std::vector<Eigen::Matrix<double, 6, 1>> gps
 
   // Correction step
   fixed_error_state_ = ins_error_state_ + K * (z - H_ * ins_error_state_);
-  fixed_error_state_covariance_ =
-      (Eigen::Matrix<double, 15, 15>::Identity() - K * H_) * P;
+  logger_->debug("EKF::updateWithGPSMeasurements - fixed_error_state:\n{}", fixed_error_state_);
+  fixed_error_state_covariance_ = (Eigen::Matrix<double, 15, 15>::Identity() - K * H_) * P;
   // Position correction
   std::get<0>(fixed_navigation_state_) = std::get<0>(ins_navigation_state_) - fixed_error_state_.segment<3>(0);
   // Velocity correction
@@ -89,6 +99,7 @@ void EKF::updateWithGPSMeasurements(std::vector<Eigen::Matrix<double, 6, 1>> gps
   tracker_->navigation_state_ptr_->setState(std::get<0>(fixed_navigation_state_),
                                             std::get<1>(fixed_navigation_state_),
                                             std::get<2>(fixed_navigation_state_));
+  tracker_->error_state_covariance_ptr_->resetPMatrix();
 }
 
 Eigen::VectorXd EKF::getFixedErrorState() { return fixed_error_state_; }
@@ -108,8 +119,7 @@ void EKF::setQMatrix(Eigen::MatrixXd Q) {
 
 void EKF::setRMatrix(Eigen::MatrixXd R) { R_ = R; }
 
-void EKF::setInitialState(Eigen::Vector3d p_0, Eigen::Vector3d v_0,
-                          Eigen::Matrix3d T_0) {
+void EKF::setInitialState(Eigen::Vector3d p_0, Eigen::Vector3d v_0, Eigen::Matrix3d T_0) {
   tracker_->setNavigationInitialState(p_0, v_0, T_0);
 }
 
