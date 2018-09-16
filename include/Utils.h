@@ -25,6 +25,21 @@ class Utils {
     M << 0, -v(2), v(1), v(2), 0, -v(0), -v(1), v(0), 0;
   }
 
+  static inline double constrainAngleDegree(double x) {
+    x = std::fmod(x + 180.0, 360.0);
+    if (x < 0.0)
+      x += 360.0;
+    return x - 180.0;
+  }
+
+  static inline double degreeToRadian(double x) {
+    return constrainAngleDegree(x) * M_PI / 180.0;
+  }
+
+  static inline double radianToDegree(double x) {
+    return x * 180.0 / M_PI;
+  }
+
   static Eigen::Vector3d toEulerAngles(Eigen::Matrix3d T) {
     Eigen::Vector3d eulerAngles;
     if (std::abs(T(2, 0)) != 1) {
