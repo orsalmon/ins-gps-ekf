@@ -90,8 +90,8 @@ bool KittiDatasetParser::loadData() {
     }
     data_vec.push_back(token);
 
-    (*gps_vec_)(i, 0) = std::stod(data_vec.at(lat));
-    (*gps_vec_)(i, 1) = std::stod(data_vec.at(lon));
+    (*gps_vec_)(i, 0) = EKF_INS::Utils::degreeToRadian(std::stod(data_vec.at(lat)));
+    (*gps_vec_)(i, 1) = EKF_INS::Utils::degreeToRadian(std::stod(data_vec.at(lon)));
     (*gps_vec_)(i, 2) = std::stod(data_vec.at(alt));
     (*gps_vec_)(i, 3) = std::stod(data_vec.at(vn));
     (*gps_vec_)(i, 4) = std::stod(data_vec.at(ve));
@@ -122,8 +122,7 @@ void KittiDatasetParser::startPlayingData(EKF_INS::EKF &ekf) {
     Eigen::Vector3d acc((*accelerometer_vec_)(i, 0),
                         (*accelerometer_vec_)(i, 1),
                         (*accelerometer_vec_)(i, 2));
-    Eigen::Vector3d gyro((*gyro_vec_)(i, 0), (*gyro_vec_)(i, 1),
-                         (*gyro_vec_)(i, 2));
+    Eigen::Vector3d gyro((*gyro_vec_)(i, 0), (*gyro_vec_)(i, 1), (*gyro_vec_)(i, 2));
     ekf.updateWithInertialMeasurement(acc, EKF_INS::Type::ACCELEROMETER);
     ekf.updateWithInertialMeasurement(gyro, EKF_INS::Type::GYRO);
 
@@ -131,8 +130,8 @@ void KittiDatasetParser::startPlayingData(EKF_INS::EKF &ekf) {
     gps_data.push_back((*gps_vec_).row(i).transpose());
     ekf.updateWithGPSMeasurements(gps_data);
 
-    uint64_t dt = (timestamp_vec_.at(i) - timestamp_vec_.at(i-1));
-    std::this_thread::sleep_for(std::chrono::duration<uint64_t , std::nano>(dt));
+    uint64_t dt = (timestamp_vec_.at(i) - timestamp_vec_.at(i - 1));
+    std::this_thread::sleep_for(std::chrono::duration<uint64_t, std::nano>(dt));
   }
 }
 } // namespace kitti_dataset_tools
