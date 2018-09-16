@@ -133,7 +133,7 @@ void EKF::updateWithGPSMeasurements(std::vector<Eigen::Matrix<double, 6, 1>> gps
 
 Eigen::VectorXd EKF::getErrorState() { return current_error_state_; }
 
-auto EKF::getNavigationState() {
+std::tuple<Eigen::Vector3d, Eigen::Vector3d, Eigen::Matrix3d> EKF::getNavigationState() {
   return current_navigation_state_;
 }
 

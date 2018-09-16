@@ -16,7 +16,7 @@ class EKF {
   void updateWithInertialMeasurement(Eigen::Vector3d data, enum Type type);
   void updateWithGPSMeasurements(std::vector<Eigen::Matrix<double, 6, 1>> gps_data);
   Eigen::VectorXd getErrorState();
-  auto getNavigationState();
+  std::tuple<Eigen::Vector3d, Eigen::Vector3d, Eigen::Matrix3d> getNavigationState();
   Eigen::MatrixXd getErrorStateCovariance();
   void setQMatrix(Eigen::MatrixXd Q);
   void setRMatrix(Eigen::MatrixXd R);
