@@ -11,10 +11,10 @@
 
 namespace EKF_INS {
 class Utils {
-public:
+ public:
   static inline double Rm(double phi) {
     return (Re * (1 - e2) /
-            std::pow(1 - e2 * std::pow(std::sin(phi), 2), 3 / 2));
+        std::pow(1 - e2 * std::pow(std::sin(phi), 2), 3 / 2));
   }
 
   static inline double Rn(double phi) {
@@ -27,32 +27,31 @@ public:
 
   static Eigen::Vector3d toEulerAngles(Eigen::Matrix3d T) {
     Eigen::Vector3d eulerAngles;
-    if (std::abs(T(3, 1)) != 1) {
-      eulerAngles(PITCH) = -std::asin(T(3, 1));
-      eulerAngles(ROLL) = std::atan2(T(3, 2) / std::cos(eulerAngles(PITCH)),
-                                     T(3, 3) / std::cos(eulerAngles(PITCH)));
-      eulerAngles(YAW) = std::atan2(T(2, 1) / std::cos(eulerAngles(PITCH)),
-                                    T(1, 1) / std::cos(eulerAngles(PITCH)));
+    if (std::abs(T(2, 0)) != 1) {
+      eulerAngles(PITCH) = -std::asin(T(2, 0));
+      eulerAngles(ROLL) = std::atan2(T(2, 1) / std::cos(eulerAngles(PITCH)), T(2, 2) / std::cos(eulerAngles(PITCH)));
+      eulerAngles(YAW) = std::atan2(T(1, 0) / std::cos(eulerAngles(PITCH)), T(0, 0) / std::cos(eulerAngles(PITCH)));
     } else {
       eulerAngles(YAW) = 0;
-      if (T(3, 1) = -1) {
+      if (T(2, 0) = -1) {
         eulerAngles(PITCH) = M_PI_2;
-        eulerAngles(ROLL) = std::atan2(T(1, 2), T(1, 3));
+        eulerAngles(ROLL) = std::atan2(T(0, 1), T(0, 2));
       } else {
         eulerAngles(PITCH) = -M_PI_2;
-        eulerAngles(ROLL) = std::atan2(-T(1, 2), -T(1, 3));
+        eulerAngles(ROLL) = std::atan2(-T(0, 1), -T(0, 2));
       }
     }
 
     return eulerAngles;
   }
 
-  template <class T> static T calcMeanVector(std::vector<T> measurments) {
+  template<class T>
+  static T calcMeanVector(std::vector<T> measurments) {
     T mean;
     mean.setZero();
     for (int n = 0; n < measurments.size(); ++n) {
       for (int i = 0; i < mean.rows(); ++i) {
-        mean(i) = mean(i) + 1 / (n+1) * (measurments.at(n)(i) - mean(i));
+        mean(i) = mean(i) + 1 / (n + 1) * (measurments.at(n)(i) - mean(i));
       }
     }
     return mean;
