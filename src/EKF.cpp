@@ -95,7 +95,12 @@ void EKF::updateWithGPSMeasurements(std::vector<Eigen::Matrix<double, 6, 1>> gps
   // Velocity correction
   std::get<1>(fixed_navigation_state_) = std::get<1>(ins_navigation_state_) - fixed_error_state_.segment<3>(3);
   // Orientation correction
-  // TODO: complete
+  Eigen::Vector3d epsilon_n = fixed_error_state_.segment<3>(6);
+  Eigen::Matrix3d E_n;
+  Utils::toSkewSymmetricMatrix(E_n, epsilon_n);
+  std::get<2>(fixed_navigation_state_) = (Eigen::Matrix3d::Identity() - E_n) * std::get<2>(fixed_navigation_state_);
+
+//  logger_->debug("updateWithGPSMeasurements - error_state: \n{}", fixed_error_state_.transpose());
 
   // Reset step
   tracker_->error_state_ptr_->resetErrorState();
