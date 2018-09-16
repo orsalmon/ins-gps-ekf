@@ -59,10 +59,14 @@ void EKF::updateWithInertialMeasurement(Eigen::Vector3d data, EKF_INS::Type type
   ins_navigation_state_ = tracker_->getNavigationState();
   ins_error_state_ = tracker_->getErrorState();
   ins_error_state_covariance_ = tracker_->getErrorStateCovariance();
-  logger_->debug("EKF::updateWithInertialMeasurement - p_n: {} v_n: {} T_n: {}",
-                 std::get<0>(ins_navigation_state_).transpose(),
-                 std::get<1>(ins_navigation_state_).transpose(),
-                 EKF_INS::Utils::toEulerAngles(std::get<2>(ins_navigation_state_)).transpose());
+  logger_->info("EKF::updateWithInertialMeasurement - p_n: {} v_n: {} T_n: {}",
+                std::get<0>(ins_navigation_state_).transpose(),
+                std::get<1>(ins_navigation_state_).transpose(),
+                EKF_INS::Utils::toEulerAngles(std::get<2>(ins_navigation_state_)).transpose());
+  // Set the most update state to provide
+  current_navigation_state_ = ins_navigation_state_;
+  current_error_state_ = ins_error_state_;
+  current_state_covariance_ = ins_error_state_covariance_;
 }
 
 void EKF::updateWithGPSMeasurements(std::vector<Eigen::Matrix<double, 6, 1>> gps_data) {
@@ -117,20 +121,24 @@ void EKF::updateWithGPSMeasurements(std::vector<Eigen::Matrix<double, 6, 1>> gps
                                             std::get<1>(fixed_navigation_state_),
                                             std::get<2>(fixed_navigation_state_));
   tracker_->error_state_covariance_ptr_->resetPMatrix();
-  logger_->debug("updateWithGPSMeasurements - p_n: {} v_n: {} T_n: {}",
-                 std::get<0>(fixed_navigation_state_).transpose(),
-                 std::get<1>(fixed_navigation_state_).transpose(),
-                 EKF_INS::Utils::toEulerAngles(std::get<2>(fixed_navigation_state_)).transpose());
+  logger_->info("updateWithGPSMeasurements - p_n: {} v_n: {} T_n: {}",
+                std::get<0>(fixed_navigation_state_).transpose(),
+                std::get<1>(fixed_navigation_state_).transpose(),
+                EKF_INS::Utils::toEulerAngles(std::get<2>(fixed_navigation_state_)).transpose());
+  // Set the most update state to provide
+  current_navigation_state_ = fixed_navigation_state_;
+  current_error_state_ = fixed_error_state_;
+  current_state_covariance_ = fixed_error_state_covariance_;
 }
 
-Eigen::VectorXd EKF::getFixedErrorState() { return fixed_error_state_; }
+Eigen::VectorXd EKF::getErrorState() { return current_error_state_; }
 
-auto EKF::getFixedNavigationState() {
-  return fixed_navigation_state_;
+auto EKF::getNavigationState() {
+  return current_navigation_state_;
 }
 
-Eigen::MatrixXd EKF::getFixedErrorStateCovariance() {
-  return fixed_error_state_covariance_;
+Eigen::MatrixXd EKF::getErrorStateCovariance() {
+  return current_state_covariance_;
 }
 
 void EKF::setQMatrix(Eigen::MatrixXd Q) {
