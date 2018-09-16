@@ -6,7 +6,15 @@
 
 namespace EKF_INS {
 ErrorState::ErrorState(std::shared_ptr<EKF_INS::NavigationState> navigation_state_ptr)
-    : navigation_state_ptr_(navigation_state_ptr), gen_(rd_()), dis_(-1.0, 1.0), delta_x_(15), F_(15, 15) {
+    : navigation_state_ptr_(navigation_state_ptr),
+      gen_(rd_()),
+      dis_(-1.0, 1.0),
+      delta_x_(15),
+      F_(15, 15),
+      omega_a_max_(0.0),
+      omega_g_max_(0.0),
+      omega_a_gm_max_(0.1),
+      omega_g_gm_max_(0.001) {
   resetErrorState();
 }
 
