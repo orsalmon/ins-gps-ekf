@@ -49,7 +49,7 @@ bool KittiDatasetParser::loadTimestamp() {
     time_t time_since_epoch = mktime(&t);
 
     uint64_t timestamp = time_since_epoch * kSecondsToNanoSeconds +
-                         std::stoi(timestamp_string.substr(20, 9));
+        std::stoi(timestamp_string.substr(20, 9));
     timestamp_vec_.push_back(timestamp);
   }
 
@@ -115,8 +115,10 @@ void KittiDatasetParser::startPlayingData(EKF_INS::EKF &ekf) {
     return;
   }
   Eigen::Vector3d p_0((*gps_vec_)(0, 0), (*gps_vec_)(0, 1), (*gps_vec_)(0, 2));
-  ekf.setInitialState(p_0, Eigen::Vector3d::Zero(),
-                      Eigen::Matrix3d::Identity());
+  // Initialize T_bn from X-forward Y-left Z-up to Z-down
+  Eigen::Vector3d init_T_diag = {-1.0, 1.0, -1.0};
+  Eigen::Matrix3d Init_T = init_T_diag.asDiagonal();
+  ekf.setInitialState(p_0, Eigen::Vector3d::Zero(), Init_T);
   ekf.start();
   for (int i = 1; i < timestamp_vec_.size(); ++i) {
     Eigen::Vector3d acc((*accelerometer_vec_)(i, 0),
