@@ -128,9 +128,11 @@ void KittiDatasetParser::startPlayingData(EKF_INS::EKF &ekf) {
     ekf.updateWithInertialMeasurement(acc, EKF_INS::Type::ACCELEROMETER);
     ekf.updateWithInertialMeasurement(gyro, EKF_INS::Type::GYRO);
 
-    std::vector<Eigen::Matrix<double, 6, 1>> gps_data;
-    gps_data.push_back((*gps_vec_).row(i).transpose());
-    ekf.updateWithGPSMeasurements(gps_data);
+    if (i % 10 == 0) {
+      std::vector<Eigen::Matrix<double, 6, 1>> gps_data;
+      gps_data.push_back((*gps_vec_).row(i).transpose());
+      ekf.updateWithGPSMeasurements(gps_data);
+    }
 
     uint64_t dt = (timestamp_vec_.at(i) - timestamp_vec_.at(i - 1));
     std::this_thread::sleep_for(std::chrono::duration<uint64_t, std::nano>(dt));
