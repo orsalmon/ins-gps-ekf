@@ -81,7 +81,10 @@ void EKF::updateWithGPSMeasurements(std::vector<Eigen::Matrix<double, 6, 1>> gps
 
   // Calculate Kalman gain
   Eigen::MatrixXd P = ins_error_state_covariance_;
-  Eigen::MatrixXd K = P * H_.transpose() * (H_ * P * H_.transpose() + R_);
+  logger_->debug("EKF::updateWithGPSMeasurements - ins_error_state_covariance:\n{}", ins_error_state_covariance_);
+  Eigen::MatrixXd S = H_ * P * H_.transpose() + R_;
+  Eigen::MatrixXd K = P * H_.transpose() * S.inverse();
+  logger_->debug("EKF::updateWithGPSMeasurements - K:\n{}", K);
 
   // Correction step
   fixed_error_state_ = ins_error_state_ + K * (z - H_ * ins_error_state_);
