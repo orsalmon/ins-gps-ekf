@@ -7,6 +7,7 @@
 
 #include "Core.h"
 #include "Tracking.h"
+#include <mutex>
 
 namespace EKF_INS {
 enum Type { ACCELEROMETER, GYRO };
@@ -18,6 +19,9 @@ class EKF {
   Eigen::VectorXd getErrorState();
   std::tuple<Eigen::Vector3d, Eigen::Vector3d, Eigen::Matrix3d> getNavigationState();
   Eigen::MatrixXd getErrorStateCovariance();
+  Eigen::Vector3d getPositionState();
+  Eigen::Vector3d getVelocityState();
+  Eigen::Matrix3d getOrientationState();
   void setQMatrix(Eigen::MatrixXd Q);
   void setRMatrix(Eigen::MatrixXd R);
   void setInitialState(Eigen::Vector3d p_0, Eigen::Vector3d v_0, Eigen::Matrix3d T_0);
@@ -39,6 +43,8 @@ class EKF {
   spdlog::logger *logger_;
   std::shared_ptr<spdlog::sinks::stdout_color_sink_mt> console_sink_;
   std::shared_ptr<spdlog::sinks::rotating_file_sink_mt> file_sink_;
+
+  std::mutex state_mutex_;
 };
 } // namespace EKF_INS
 

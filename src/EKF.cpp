@@ -64,9 +64,11 @@ void EKF::updateWithInertialMeasurement(Eigen::Vector3d data, EKF_INS::Type type
                 std::get<1>(ins_navigation_state_).transpose(),
                 EKF_INS::Utils::toEulerAngles(std::get<2>(ins_navigation_state_)).transpose());
   // Set the most update state to provide
+  state_mutex_.lock();
   current_navigation_state_ = ins_navigation_state_;
   current_error_state_ = ins_error_state_;
   current_state_covariance_ = ins_error_state_covariance_;
+  state_mutex_.unlock();
 }
 
 void EKF::updateWithGPSMeasurements(std::vector<Eigen::Matrix<double, 6, 1>> gps_data) {
@@ -126,19 +128,41 @@ void EKF::updateWithGPSMeasurements(std::vector<Eigen::Matrix<double, 6, 1>> gps
                 std::get<1>(fixed_navigation_state_).transpose(),
                 EKF_INS::Utils::toEulerAngles(std::get<2>(fixed_navigation_state_)).transpose());
   // Set the most update state to provide
+  state_mutex_.lock();
   current_navigation_state_ = fixed_navigation_state_;
   current_error_state_ = fixed_error_state_;
   current_state_covariance_ = fixed_error_state_covariance_;
+  state_mutex_.unlock();
 }
 
-Eigen::VectorXd EKF::getErrorState() { return current_error_state_; }
+Eigen::VectorXd EKF::getErrorState() {
+  std::lock_guard<std::mutex> lock(state_mutex_);
+  return current_error_state_;
+}
 
 std::tuple<Eigen::Vector3d, Eigen::Vector3d, Eigen::Matrix3d> EKF::getNavigationState() {
+  std::lock_guard<std::mutex> lock(state_mutex_);
   return current_navigation_state_;
 }
 
 Eigen::MatrixXd EKF::getErrorStateCovariance() {
+  std::lock_guard<std::mutex> lock(state_mutex_);
   return current_state_covariance_;
+}
+
+Eigen::Vector3d EKF::getPositionState() {
+  std::lock_guard<std::mutex> lock(state_mutex_);
+  return std::get<0>(current_navigation_state_);
+}
+
+Eigen::Vector3d EKF::getVelocityState() {
+  std::lock_guard<std::mutex> lock(state_mutex_);
+  return std::get<1>(current_navigation_state_);
+}
+
+Eigen::Matrix3d EKF::getOrientationState() {
+  std::lock_guard<std::mutex> lock(state_mutex_);
+  return std::get<2>(current_navigation_state_);
 }
 
 void EKF::setQMatrix(Eigen::MatrixXd Q) {
