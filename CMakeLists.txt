@@ -17,9 +17,7 @@ if(NOT EIGEN3_FOUND)
     set(EIGEN_PACKAGE Eigen)
 endif()
 
-find_package(PythonLibs 2.7)
-
-include_directories(include 3rdparty ${EIGEN3_INCLUDE_DIRS} PRIVATE ${Boost_INCLUDE_DIRS} ${PYTHON_INCLUDE_DIRS})
+include_directories(include 3rdparty ${EIGEN3_INCLUDE_DIRS} PRIVATE ${Boost_INCLUDE_DIRS})
 
 file(GLOB EKF_INCLUDE
         "include/*.h")
@@ -27,19 +25,5 @@ file(GLOB EKF_INCLUDE
 file(GLOB EKF_SRC
         "src/*.cpp")
 
-file(GLOB KITTI_DATASET_TOOLS_SRC
-        "src/KittiDatasetTools/*.cpp")
-
-add_library(EKF-INS SHARED ${EKF_SRC})
-target_link_libraries(EKF-INS ${Boost_LIBRARIES} ${PYTHON_LIBRARIES})
-
-add_library(KittiDatasetTools ${KITTI_DATASET_TOOLS_SRC})
-target_link_libraries(KittiDatasetTools ${Boost_LIBRARIES} ${PYTHON_LIBRARIES})
-
-# TESTS #
-add_executable(simple_test tests/simple_test.cpp)
-target_link_libraries(simple_test EKF-INS ${PYTHON_LIBRARIES})
-
-add_executable(kitti_dataset_test tests/kitti_dataset_tools_test.cpp)
-target_link_libraries(kitti_dataset_test KittiDatasetTools EKF-INS ${PYTHON_LIBRARIES})
-
+add_library(EKF-INS STATIC ${EKF_SRC})
+target_link_libraries(EKF-INS ${Boost_LIBRARIES})
