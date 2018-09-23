@@ -48,7 +48,7 @@ class Utils {
       eulerAngles(YAW) = std::atan2(T(1, 0) / std::cos(eulerAngles(PITCH)), T(0, 0) / std::cos(eulerAngles(PITCH)));
     } else {
       eulerAngles(YAW) = 0;
-      if (T(2, 0) = -1) {
+      if (T(2, 0) == -1) {
         eulerAngles(PITCH) = M_PI_2;
         eulerAngles(ROLL) = std::atan2(T(0, 1), T(0, 2));
       } else {
