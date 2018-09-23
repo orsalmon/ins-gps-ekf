@@ -28,13 +28,13 @@ EKF::EKF() : Q_(15, 15), R_(6, 6), H_(6, 15), is_running_(false) {
 
   // Initializing default Q matrix
   Eigen::VectorXd q_diag(15);
-  q_diag << 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01;
+  q_diag << 0.01, 0.01, 0.01, 0.5, 0.5, 0.1, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3;
   Q_ = q_diag.asDiagonal();
   tracker_->setQMatrix(Q_);
 
   // Initializing default R matrix
   Eigen::VectorXd r_diag(6);
-  r_diag << 0.000001, 0.000001, 0.000001, 0.000001, 0.000001, 0.000001;
+  r_diag << 0.000001, 0.000001, 0.5, 0.000001, 0.000001, 0.5;
   R_ = r_diag.asDiagonal();
 
   H_.setZero();
@@ -84,7 +84,7 @@ void EKF::updateWithGPSMeasurements(std::vector<Eigen::Matrix<double, 6, 1>> gps
   logger_->debug("EKF::updateWithGPSMeasurements - gps_data_mean: {}", gps_data_mean.transpose());
   Eigen::VectorXd pos_vel_state(6);
   pos_vel_state << std::get<0>(ins_navigation_state_), std::get<1>(ins_navigation_state_);
-  logger_->debug("EKF::updateWithGPSMeasurements - pos_vel_state:\n{}", pos_vel_state);
+  logger_->debug("EKF::updateWithGPSMeasurements - pos_vel_state: {}", pos_vel_state.transpose());
 
   // Calculate measurement vector
   Eigen::VectorXd z = pos_vel_state - gps_data_mean;
@@ -99,14 +99,14 @@ void EKF::updateWithGPSMeasurements(std::vector<Eigen::Matrix<double, 6, 1>> gps
 
   // Correction step
   fixed_error_state_ = ins_error_state_ + K * (z - H_ * ins_error_state_);
-  logger_->debug("EKF::updateWithGPSMeasurements - fixed_error_state:\n{}", fixed_error_state_);
+  logger_->debug("EKF::updateWithGPSMeasurements - fixed_error_state: {}", fixed_error_state_.transpose());
   fixed_error_state_covariance_ = (Eigen::Matrix<double, 15, 15>::Identity() - K * H_) * P;
   // Position correction
   std::get<0>(fixed_navigation_state_) = std::get<0>(ins_navigation_state_) - fixed_error_state_.segment<3>(0);
-  logger_->debug("EKF::updateWithGPSMeasurements - std::get<0>(fixed_navigation_state_):\n{}", std::get<0>(fixed_navigation_state_));
+  logger_->debug("EKF::updateWithGPSMeasurements - std::get<0>(fixed_navigation_state_): {}", std::get<0>(fixed_navigation_state_).transpose());
   // Velocity correction
   std::get<1>(fixed_navigation_state_) = std::get<1>(ins_navigation_state_) - fixed_error_state_.segment<3>(3);
-  logger_->debug("EKF::updateWithGPSMeasurements - std::get<1>(fixed_navigation_state_):\n{}", std::get<1>(fixed_navigation_state_));
+  logger_->debug("EKF::updateWithGPSMeasurements - std::get<1>(fixed_navigation_state_): {}", std::get<1>(fixed_navigation_state_).transpose());
   // Orientation correction
   Eigen::Vector3d epsilon_n = fixed_error_state_.segment<3>(6);
   Eigen::Matrix3d E_n;
