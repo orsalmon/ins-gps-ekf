@@ -174,6 +174,9 @@ void EKF::setRMatrix(Eigen::MatrixXd R) { R_ = R; }
 
 void EKF::setInitialState(Eigen::Vector3d p_0, Eigen::Vector3d v_0, Eigen::Matrix3d T_0) {
   tracker_->setNavigationInitialState(p_0, v_0, T_0);
+  state_mutex_.lock();
+  current_navigation_state_ = std::make_tuple(p_0,v_0,T_0);
+  state_mutex_.unlock();
 }
 
 void EKF::start() {
