@@ -42,21 +42,7 @@ class Utils {
 
   static Eigen::Vector3d toEulerAngles(Eigen::Matrix3d T) {
     Eigen::Vector3d eulerAngles;
-    if (std::abs(T(2, 0)) != 1) {
-      eulerAngles(PITCH) = -std::asin(T(2, 0));
-      eulerAngles(ROLL) = std::atan2(T(2, 1) / std::cos(eulerAngles(PITCH)), T(2, 2) / std::cos(eulerAngles(PITCH)));
-      eulerAngles(YAW) = std::atan2(T(1, 0) / std::cos(eulerAngles(PITCH)), T(0, 0) / std::cos(eulerAngles(PITCH)));
-    } else {
-      eulerAngles(YAW) = 0;
-      if (T(2, 0) == -1) {
-        eulerAngles(PITCH) = M_PI_2;
-        eulerAngles(ROLL) = std::atan2(T(0, 1), T(0, 2));
-      } else {
-        eulerAngles(PITCH) = -M_PI_2;
-        eulerAngles(ROLL) = std::atan2(-T(0, 1), -T(0, 2));
-      }
-    }
-
+    eulerAngles = T.eulerAngles(0, 1, 2);
     return eulerAngles;
   }
 
