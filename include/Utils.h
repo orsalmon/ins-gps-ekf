@@ -26,10 +26,10 @@ class Utils {
   }
 
   static inline double constrainAngleDegree(double x) {
-    x = std::fmod(x + 180.0, 360.0);
-    if (x < 0.0)
-      x += 360.0;
-    return x - 180.0;
+    x = std::fmod(x, 360);
+    if (x < 0)
+      x += 360;
+    return x;
   }
 
   static inline double degreeToRadian(double x) {

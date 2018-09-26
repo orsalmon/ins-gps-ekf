@@ -110,10 +110,12 @@ void EKF::updateWithGPSMeasurements(std::vector<Eigen::Matrix<double, 6, 1>> gps
   std::get<1>(fixed_navigation_state_) = std::get<1>(ins_navigation_state_) - fixed_error_state_.segment<3>(3);
   logger_->debug("EKF::updateWithGPSMeasurements - std::get<1>(fixed_navigation_state_): {}", std::get<1>(fixed_navigation_state_).transpose());
   // Orientation correction
+  logger_->debug("EKF::updateWithGPSMeasurements - std::get<2>(fixed_navigation_state_): {}",
+                 EKF_INS::Utils::toEulerAngles(std::get<2>(fixed_navigation_state_)).transpose());
   Eigen::Vector3d epsilon_n = fixed_error_state_.segment<3>(6);
   Eigen::Matrix3d E_n;
   Utils::toSkewSymmetricMatrix(E_n, epsilon_n);
-  std::get<2>(fixed_navigation_state_) = (Eigen::Matrix3d::Identity() - E_n) * std::get<2>(fixed_navigation_state_);
+  std::get<2>(fixed_navigation_state_) = (Eigen::Matrix3d::Identity() - E_n) * std::get<2>(ins_navigation_state_);
 
   logger_->debug("updateWithGPSMeasurements - error_state: \n{}", fixed_error_state_.transpose());
 
@@ -175,7 +177,7 @@ void EKF::setRMatrix(Eigen::MatrixXd R) { R_ = R; }
 void EKF::setInitialState(Eigen::Vector3d p_0, Eigen::Vector3d v_0, Eigen::Matrix3d T_0) {
   tracker_->setNavigationInitialState(p_0, v_0, T_0);
   state_mutex_.lock();
-  current_navigation_state_ = std::make_tuple(p_0,v_0,T_0);
+  current_navigation_state_ = std::make_tuple(p_0, v_0, T_0);
   state_mutex_.unlock();
 }
 
