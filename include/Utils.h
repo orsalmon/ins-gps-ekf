@@ -46,6 +46,23 @@ class Utils {
     return eulerAngles;
   }
 
+  static Eigen::Matrix3d toRotationMatrix(Eigen::Vector3d eulerAngles) {
+    Eigen::Matrix3d M;
+    M = Eigen::AngleAxisd(eulerAngles(ROLL), Eigen::Vector3d::UnitX())
+        * Eigen::AngleAxisd(eulerAngles(PITCH), Eigen::Vector3d::UnitY())
+        * Eigen::AngleAxisd(eulerAngles(YAW), Eigen::Vector3d::UnitZ());
+    return M;
+  }
+
+  static Eigen::Vector3d fromENUtoNED(Eigen::Vector3d enu) {
+    Eigen::Matrix3d T;
+    T << 1, 0, 0, 0, -1, 0, 0, 0, -1;
+
+    Eigen::Vector3d ned;
+    ned = T * enu;
+    return ned;
+  }
+
   template<class T>
   static T calcMeanVector(std::vector<T> measurments) {
     T mean;
