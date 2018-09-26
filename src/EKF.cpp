@@ -5,7 +5,7 @@
 #include "EKF.h"
 
 namespace EKF_INS {
-EKF::EKF() : Q_(15, 15), R_(6, 6), H_(6, 15), is_running_(false) {
+EKF::EKF() : Q_(15, 15), R_(6, 6), H_(6, 15), is_running_(false), use_azimuth_alignment_(true) {
   try {
     console_sink_ = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
     console_sink_->set_level(spdlog::level::info);
@@ -88,8 +88,17 @@ void EKF::updateWithGPSMeasurements(std::vector<Eigen::Matrix<double, 6, 1>> gps
   pos_vel_state << std::get<0>(ins_navigation_state_), std::get<1>(ins_navigation_state_);
   logger_->debug("EKF::updateWithGPSMeasurements - pos_vel_state: {}", pos_vel_state.transpose());
 
+  double vel = std::sqrt(pos_vel_state(3) * pos_vel_state(3) + pos_vel_state(4) * pos_vel_state(4));
+  bool is_vel_higher_than_threshold = vel >= velocity_threshold_;
+
   // Calculate measurement vector
   Eigen::VectorXd z = pos_vel_state - gps_data_mean;
+  if (is_vel_higher_than_threshold && use_azimuth_alignment_) {
+    double gps_heading = std::atan2(pos_vel_state(4), pos_vel_state(3));
+    double ins_heading = EKF_INS::Utils::toEulerAngles(std::get<2>(ins_navigation_state_))(2);
+    z_heading_ = ins_heading - gps_heading;
+    logger_->debug("vel: {} gps_heading: {} ins_heading: {} z_heading_: {}", vel, gps_heading, ins_heading, z_heading_);
+  }
   logger_->debug("EKF::updateWithGPSMeasurements - z: {}", z.transpose());
 
   // Calculate Kalman gain
@@ -105,17 +114,20 @@ void EKF::updateWithGPSMeasurements(std::vector<Eigen::Matrix<double, 6, 1>> gps
   fixed_error_state_covariance_ = (Eigen::Matrix<double, 15, 15>::Identity() - K * H_) * P;
   // Position correction
   std::get<0>(fixed_navigation_state_) = std::get<0>(ins_navigation_state_) - fixed_error_state_.segment<3>(0);
-  logger_->debug("EKF::updateWithGPSMeasurements - std::get<0>(fixed_navigation_state_): {}", std::get<0>(fixed_navigation_state_).transpose());
   // Velocity correction
   std::get<1>(fixed_navigation_state_) = std::get<1>(ins_navigation_state_) - fixed_error_state_.segment<3>(3);
-  logger_->debug("EKF::updateWithGPSMeasurements - std::get<1>(fixed_navigation_state_): {}", std::get<1>(fixed_navigation_state_).transpose());
   // Orientation correction
-  logger_->debug("EKF::updateWithGPSMeasurements - std::get<2>(fixed_navigation_state_): {}",
-                 EKF_INS::Utils::toEulerAngles(std::get<2>(fixed_navigation_state_)).transpose());
   Eigen::Vector3d epsilon_n = fixed_error_state_.segment<3>(6);
-  Eigen::Matrix3d E_n;
-  Utils::toSkewSymmetricMatrix(E_n, epsilon_n);
-  std::get<2>(fixed_navigation_state_) = (Eigen::Matrix3d::Identity() - E_n) * std::get<2>(ins_navigation_state_);
+  if (is_vel_higher_than_threshold && use_azimuth_alignment_) {
+    epsilon_n(2) = z_heading_;
+    Eigen::Vector3d ins_navigation_euler_angles = EKF_INS::Utils::toEulerAngles(std::get<2>(ins_navigation_state_));
+    std::get<2>(fixed_navigation_state_) = EKF_INS::Utils::toRotationMatrix(ins_navigation_euler_angles - epsilon_n);
+  }
+  else {
+    Eigen::Matrix3d E_n;
+    Utils::toSkewSymmetricMatrix(E_n, epsilon_n);
+    std::get<2>(fixed_navigation_state_) = (Eigen::Matrix3d::Identity() - E_n) * std::get<2>(ins_navigation_state_);
+  }
 
   logger_->debug("updateWithGPSMeasurements - error_state: \n{}", fixed_error_state_.transpose());
 
@@ -134,6 +146,7 @@ void EKF::updateWithGPSMeasurements(std::vector<Eigen::Matrix<double, 6, 1>> gps
   current_navigation_state_ = fixed_navigation_state_;
   current_error_state_ = fixed_error_state_;
   current_state_covariance_ = fixed_error_state_covariance_;
+  azimuth_ = EKF_INS::Utils::toEulerAngles(std::get<2>(fixed_navigation_state_))(2);
   state_mutex_.unlock();
 }
 
@@ -165,6 +178,11 @@ Eigen::Vector3d EKF::getVelocityState() {
 Eigen::Matrix3d EKF::getOrientationState() {
   std::lock_guard<std::mutex> lock(state_mutex_);
   return std::get<2>(current_navigation_state_);
+}
+
+double EKF::getAzimuth() {
+  std::lock_guard<std::mutex> lock(state_mutex_);
+  return azimuth_;
 }
 
 void EKF::setQMatrix(Eigen::MatrixXd Q) {
