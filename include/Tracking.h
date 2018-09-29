@@ -19,7 +19,7 @@ class EKF;
 class Tracking {
   friend class EKF;
 public:
-  Tracking();
+  Tracking(bool use_azimuth_alignment);
   void updateTrackingWithAccelerometer(Eigen::Vector3d f_bi_b);
   void updateTrackingWithGyro(Eigen::Vector3d omega_bi_b);
   void setNavigationInitialState(const Eigen::Vector3d p,
@@ -49,6 +49,8 @@ private:
   std::chrono::_V2::system_clock::time_point clock_;
 
   std::shared_ptr<spdlog::logger> logger_;
+
+  const bool use_azimuth_alignment_;
 };
 } // namespace EKF_INS
 

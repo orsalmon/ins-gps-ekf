@@ -5,7 +5,7 @@
 #include "Tracking.h"
 
 namespace EKF_INS {
-Tracking::Tracking() {
+Tracking::Tracking(bool use_azimuth_alignment) : use_azimuth_alignment_(use_azimuth_alignment) {
   try {
     logger_ = spdlog::get("ekf_ins_logger");
   }
@@ -13,7 +13,7 @@ Tracking::Tracking() {
     std::cout << "Log initialization failed: " << ex.what() << std::endl;
   }
   navigation_state_ptr_.reset(new EKF_INS::NavigationState());
-  error_state_ptr_.reset(new EKF_INS::ErrorState(navigation_state_ptr_));
+  error_state_ptr_.reset(new EKF_INS::ErrorState(navigation_state_ptr_,use_azimuth_alignment_));
   error_state_covariance_ptr_.reset(new EKF_INS::ErrorStateCovariance(error_state_ptr_));
 
   resetClock();

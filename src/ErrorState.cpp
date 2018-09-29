@@ -5,8 +5,9 @@
 #include "ErrorState.h"
 
 namespace EKF_INS {
-ErrorState::ErrorState(std::shared_ptr<EKF_INS::NavigationState> navigation_state_ptr)
+ErrorState::ErrorState(std::shared_ptr<EKF_INS::NavigationState> navigation_state_ptr, bool use_azimuth_alignment)
     : navigation_state_ptr_(navigation_state_ptr),
+      use_azimuth_alignment_(use_azimuth_alignment),
       gen_(rd_()),
       dis_(-1.0, 1.0),
       delta_x_(15),
@@ -28,6 +29,11 @@ void ErrorState::updateStateWithMeasurements(Eigen::Vector3d f_bi_b, Eigen::Vect
   f_bi_b_ = f_bi_b;
   omega_bi_b_ = omega_bi_b;
 
+  // Azimuth correction
+  if (use_azimuth_alignment_) {
+    current_f_bi_n_ = T_bn_ * f_bi_b;
+  }
+
   delta_p_dot_n_ = Frr() * delta_p_n_ + Frv() * delta_v_n_ + Fre() * epsilon_n_;
   delta_v_dot_n_ = Fvr() * delta_p_n_ + Fvv() * delta_v_n_ + Fve() * epsilon_n_ + T_bn_ * b_a_ + T_bn_ * omega_a();
   epsilon_dot_n_ = Fer() * delta_p_n_ + Fev() * delta_v_n_ + Fee() * epsilon_n_ + T_bn_ * b_g_ + T_bn_ * omega_g();
@@ -41,6 +47,20 @@ void ErrorState::integrateState(double dt) {
   epsilon_n_ += dt * epsilon_dot_n_;
   b_a_ += dt * b_dot_a_;
   b_g_ += dt * b_dot_g_;
+
+  // Azimuth correction
+  if (use_azimuth_alignment_) {
+    if ((std::abs(current_f_bi_n_(n) - last_f_bi_n_(n)) >= acceleration_threshold_)
+        || (std::abs(current_f_bi_n_(e) - last_f_bi_n_(e)) >= acceleration_threshold_)) {
+      double delta_azimuth =
+          -((delta_v_dot_n_(e) * current_f_bi_n_(n) - delta_v_dot_n_(n) * current_f_bi_n_(e) + Utils::g * epsilon_n_(n) * current_f_bi_n_(n)
+              + Utils::g * epsilon_n_(e) * current_f_bi_n_(e))
+              / (current_f_bi_n_(n) * current_f_bi_n_(n) + current_f_bi_n_(e) * current_f_bi_n_(e)));
+//      std::cout << "Changing epsilon_n_(d) from : " << epsilon_n_(d) << " to: " << delta_azimuth << std::endl;
+      epsilon_n_(d) = delta_azimuth;
+    }
+    last_f_bi_n_ = current_f_bi_n_;
+  }
 }
 
 void ErrorState::resetErrorState() {

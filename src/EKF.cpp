@@ -24,7 +24,7 @@ EKF::EKF() : Q_(15, 15), R_(6, 6), H_(6, 15), is_running_(false), use_azimuth_al
   catch (const spdlog::spdlog_ex &ex) {
     std::cout << "Log initialization failed: " << ex.what() << std::endl;
   }
-  tracker_ = new EKF_INS::Tracking();
+  tracker_ = new EKF_INS::Tracking(use_azimuth_alignment_);
 
   // Initializing default Q matrix
   Eigen::VectorXd q_diag(15);

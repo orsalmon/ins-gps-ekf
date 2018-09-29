@@ -12,7 +12,7 @@
 namespace EKF_INS {
 class ErrorState {
  public:
-  ErrorState(std::shared_ptr<EKF_INS::NavigationState> navigation_state_ptr);
+  ErrorState(std::shared_ptr<EKF_INS::NavigationState> navigation_state_ptr, bool use_azimuth_alignment);
   Eigen::VectorXd getState();
   void updateStateWithMeasurements(Eigen::Vector3d f_bi_b, Eigen::Vector3d omega_bi_b);
   void integrateState(double dt);
@@ -59,6 +59,10 @@ class ErrorState {
   std::mt19937 gen_;
   std::uniform_real_distribution<double> dis_;
   double omega_a_max_, omega_g_max_, omega_a_gm_max_, omega_g_gm_max_;
+
+  const bool use_azimuth_alignment_;
+  const double acceleration_threshold_ = 0.2;
+  Eigen::Vector3d current_f_bi_n_, last_f_bi_n_;
 
   enum Pose { phi, lambda, h };
   enum Vel { n, e, d };
